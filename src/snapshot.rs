@@ -1,10 +1,7 @@
-pub mod btrfs;
-pub mod config;
-pub mod types;
+use crate::btrfs;
+use crate::types::Vault;
 
-use types::Vault;
-
-fn snap<'a>(vault: &'a Vault) -> Result<(), String> {
+fn snap(vault: &Vault) -> Result<(), String> {
     //Stage 1 - verify that all relevant paths are btrfs subvols
     if !btrfs::is_btrfs_subvol(vault.path.as_path()) {
         return Err(format!(
@@ -64,21 +61,4 @@ fn snap<'a>(vault: &'a Vault) -> Result<(), String> {
     }
 
     Ok(())
-}
-
-fn main() {
-    // let v = Volume {
-    //     name: "@home".into(),
-    //     path: "/home".into(),
-    // };
-
-    // snap(&Vault {
-    //     path: "/mnt/@snapshots".into(),
-    //     retain_number: 0,
-    //     snapshots: Vec::new(),
-    //     volumes: vec![&v],
-    // })
-    // .unwrap();
-
-    // println!("{:?}", config::read_config());
 }
