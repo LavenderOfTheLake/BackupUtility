@@ -1,0 +1,18 @@
+/media/backup/snapshots:
+  Timestamp Format: "%F"
+
+  Retention Policy:
+  - name: Hourly
+    keep every: 1hr
+    max snapshots: 30
+
+  - name: Daily
+    for: 1 month
+    keep every: 1day
+
+  Volumes:
+  - name: '@home'
+    path: /home
+
+  - name: '@root'
+    path: /

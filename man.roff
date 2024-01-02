@@ -1,7 +1,7 @@
 .TH BACKUPS.YAML 5 2024-01-02 anabelle2001
 
 .SH NAME
-backup-snapshots.yaml \- Configures \fBVaults\fR, \fBVolumes\fR, and \fBRetention Policies\fR for rusty-daemon.
+backup-snapshots.yaml \- Define \fBVaults\fR for rusty-daemon to manage.
 
 .SH EXAMPLE
 .nf
@@ -26,11 +26,21 @@ backup-snapshots.yaml \- Configures \fBVaults\fR, \fBVolumes\fR, and \fBRetentio
 
 
 .SH VAULTS
-A \fBVault\fR is a path to store btrfs snapshots in. Each \fBSnapshot\fR is a folder, named with timestamp of its creation date. This folderc contains the snapshotted btrfs subvolumes as "subfolders".
+A \fBVault\fR is a path to store btrfs snapshots in. Each \fBSnapshot\fR is a folder, named with timestamp of its creation date. The folder contains the snapshotted btrfs subvolumes as "subfolders". \fBVaults\fR are written at the top-level of the yaml file, as the path to the folder. \fBbackup-snapshots.yaml\fR must contain one or more vaults. In the above example, only one vault is defined: \fB/media/backup/snapshots\fR.
 
-\fBVaults\fR are written at the top-level of the yaml file. backup-snapshots.yaml must contain one or more vaults.
+Vaults contain the following keys:
 
-In the above example, only one vault is defined: \fB/media/backup/snapshots\fR
+.TP
+\fBTimestamp Format:\fR \fIstring\fR
+Date string to use when generating each snapshot folder stored in the vault.
+
+.TP
+\fBRetention Policy:
+Defines how long to keep snapshots for. 
+
+.TP
+\fBVolumes:
+Declares what volumes to backup. 
 
 .SH VOLUMES
 A \fBVolume\fR is a btrfs subvolume that rusty-daemon will backup. Each \fBVolume\fR is listed under a \fBVault\fR, which is where the snapshots are stored. \fBVolumes\fR can use the following keys:
@@ -68,3 +78,6 @@ Ensures this tier only matches the first N snapshots. Later snapshots will not m
 
 .SH DURATIONS
 \fBRusty Daemon\fR uses the \fBparse_duration\fR crate to parse durations. The underlying format is identical to \fISYSTEMD.TIME\fR(7).
+
+.SH TIMESTAMPS
+[!wip]

@@ -1,12 +1,12 @@
+pub mod btrfs;
+pub mod config;
 pub mod types;
 
-use std::path::Path;
-use std::{fs::DirBuilder, path::PathBuf};
-use types::{Snapshot, Vault, Volume};
+use types::Vault;
 
-fn snap<'a>(vault: &'a Vault) -> Result<Snapshot<'a>, String> {
+fn snap<'a>(vault: &'a Vault) -> Result<(), String> {
     //Stage 1 - verify that all relevant paths are btrfs subvols
-    if !is_btrfs_subvol(vault.path.as_path()) {
+    if !btrfs::is_btrfs_subvol(vault.path.as_path()) {
         return Err(format!(
             "Vault Path {:?} is not a valid btrfs subvolume",
             vault.path
@@ -14,7 +14,7 @@ fn snap<'a>(vault: &'a Vault) -> Result<Snapshot<'a>, String> {
     }
 
     for vol in vault.volumes.clone() {
-        if !is_btrfs_subvol(vol.path.as_path()) {
+        if !btrfs::is_btrfs_subvol(vol.path.as_path()) {
             return Err(format!(
                 "Subvolume Path {:?} is not a valid btrfs subvolume",
                 vol.path
@@ -24,7 +24,7 @@ fn snap<'a>(vault: &'a Vault) -> Result<Snapshot<'a>, String> {
 
     //Stage 2 - create the btrfs snapshot folder
     let snap_time = chrono::Local::now();
-    let snap_folder: PathBuf = snap_time //relative path
+    let snap_folder: std::path::PathBuf = snap_time //relative path
         .format("%F %I:%M%p")
         .to_string()
         .into();
@@ -34,7 +34,11 @@ fn snap<'a>(vault: &'a Vault) -> Result<Snapshot<'a>, String> {
 
     println!("creating snapshot dir {:?}", snap_folder);
 
-    match { DirBuilder::new().recursive(true).create(&snap_folder) } {
+    match {
+        std::fs::DirBuilder::new()
+            .recursive(true)
+            .create(&snap_folder)
+    } {
         Err(_) => {
             return Err("Couldn't create Snapshot folder".into());
         }
@@ -59,35 +63,22 @@ fn snap<'a>(vault: &'a Vault) -> Result<Snapshot<'a>, String> {
         }
     }
 
-    Ok(Snapshot {
-        vault,
-        time: snap_time.naive_local(),
-    })
+    Ok(())
 }
 
 fn main() {
-    let v = Volume {
-        name: "@home".into(),
-        path: "/home".into(),
-    };
+    // let v = Volume {
+    //     name: "@home".into(),
+    //     path: "/home".into(),
+    // };
 
-    snap(&Vault {
-        path: "/mnt/@snapshots".into(),
-        retain_number: 0,
-        snapshots: Vec::new(),
-        volumes: vec![&v],
-    })
-    .unwrap();
-}
+    // snap(&Vault {
+    //     path: "/mnt/@snapshots".into(),
+    //     retain_number: 0,
+    //     snapshots: Vec::new(),
+    //     volumes: vec![&v],
+    // })
+    // .unwrap();
 
-fn is_btrfs_subvol(path: &Path) -> bool {
-    match std::process::Command::new("btrfs")
-        .arg("subvolume")
-        .arg("show")
-        .arg(path)
-        .output()
-    {
-        Ok(_) => true,
-        Err(_) => false,
-    }
+    // println!("{:?}", config::read_config());
 }
