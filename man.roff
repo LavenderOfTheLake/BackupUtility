@@ -1,0 +1,70 @@
+.TH BACKUPS.YAML 5 2024-01-02 anabelle2001
+
+.SH NAME
+backup-snapshots.yaml \- Configures \fBVaults\fR, \fBVolumes\fR, and \fBRetention Policies\fR for rusty-daemon.
+
+.SH EXAMPLE
+.nf
+\&```
+\&/media/backup/snapshots:
+\&  Timestamp Format: "%F"
+\&
+\&  Retention Policy:
+\&  - for: 72 hrs
+\&    keep every: 1hr
+\&  - for: 1 month
+\&    keep every: day
+\&  
+\&  Volumes:
+\&  - name: @home
+\&    path: /home
+\&      
+\&  - name: @root
+\&    path: /
+\&```
+.fi
+
+
+.SH VAULTS
+A \fBVault\fR is a path to store btrfs snapshots in. Each \fBSnapshot\fR is a folder, named with timestamp of its creation date. This folderc contains the snapshotted btrfs subvolumes as "subfolders".
+
+\fBVaults\fR are written at the top-level of the yaml file. backup-snapshots.yaml must contain one or more vaults.
+
+In the above example, only one vault is defined: \fB/media/backup/snapshots\fR
+
+.SH VOLUMES
+A \fBVolume\fR is a btrfs subvolume that rusty-daemon will backup. Each \fBVolume\fR is listed under a \fBVault\fR, which is where the snapshots are stored. \fBVolumes\fR can use the following keys:
+
+.TP
+.B name
+The name of the volume. This name is used to label the volume's snapshots, to differentiate it from other subvolumes in the snapshot.
+
+.TP
+.B path
+The path of the subvolume to snapshot.
+
+.SH RETENTION POLICY
+A \fBRetention Policy\fR is a list of \fBRetention Tiers\fR, which constrain which backups the system deletes when running \fBrusty-daemon prune\fR. ain the system's ability to delete old backups. 
+
+When \fBrusty-daemon prune\fR is run, \fBSnapshots\fR are ordered from newest to oldest, and each is assigned to the first matching RetentionTier.
+
+Each tier's object can contain following keys:
+
+.TP
+.B keep every: \fR\fIduration
+Specifies the largest allowable interval between adjacent snapshots. The system will not delete a snapshot B, if the resulting gap between A and C is larger than the keepEvery duration. If this key is omitted, no snapshots will be deleted while the tier is active.
+
+.TP
+.B for: \fR\fIduration
+Sets a time limit so that the tier will only apply to a subset of all snapshots. If this key is omitted, the retention policy applies to all snapshots, regardless of age.
+
+.TP
+.B name: \fR\fIstring
+Used to name the tier to improve log readability.
+
+.TP
+.B max snapshots: \fR\fIinteger
+Ensures this tier only matches the first N snapshots. Later snapshots will not match this tier, and will be moved to later tiers.
+
+.SH DURATIONS
+\fBRusty Daemon\fR uses the \fBparse_duration\fR crate to parse durations. The underlying format is identical to \fISYSTEMD.TIME\fR(7).
