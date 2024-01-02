@@ -160,13 +160,11 @@ fn parse_retention_tier(retention_tier: &Yaml) -> Result<RetentionTier, &'static
 }
 
 mod tests {
-    use std::path::PathBuf;
-
-    use crate::types::{RetentionTier, Volume};
 
     #[test]
     fn test() {
-        use crate::Vault;
+        use crate::types::Vault;
+        use crate::types::{RetentionTier, Volume};
 
         let y = super::read_config_from_file(std::path::Path::new("test_config.yaml"))
             .expect("Can't read the file");
