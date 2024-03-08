@@ -1,5 +1,6 @@
 use crate::types::{RetentionTier, Vault, Volume};
 use std::{path::PathBuf, str::FromStr};
+
 use yaml_rust::yaml::Yaml;
 
 //todo:
@@ -124,18 +125,16 @@ fn parse_retention_tier(retention_tier: &Yaml) -> Result<RetentionTier, &'static
         None => None,
     };
 
-    let keep_every = match retention_tier.get(key_keep_every) {
-        Some(duration) => Some(
-            parse_duration::parse(
-                duration
-                    .as_str()
-                    .ok_or("`keep every:` must contain a duration, in the form of a string.")?,
-            )
-            .map_err(|_| "Invalid Duration: {duration.as_str().unwrap()}")?
-            .as_secs(),
-        ),
-        None => None,
-    };
+    let keep_every_err_text = "`keep every:` must contain a duration, in the form of a string.";
+    let keep_every = parse_duration::parse(
+        retention_tier
+            .get(key_keep_every)
+            .ok_or(keep_every_err_text)?
+            .as_str()
+            .ok_or(keep_every_err_text)?,
+    )
+    .map_err(|_| "Invalid Duration: {duration.as_str().unwrap()}")?
+    .as_secs();
 
     let max_snapshots = match retention_tier.get(key_max_snapshots) {
         Some(quantity) => Some(
@@ -179,13 +178,13 @@ mod tests {
                 retention_policy: vec![
                     RetentionTier {
                         name: Some("Hourly".into()),
-                        keep_every: Some(3600),
+                        keep_every: 3600,
                         max_snapshots: Some(30),
                         for_duration: None,
                     },
                     RetentionTier {
                         name: Some("Daily".into()),
-                        keep_every: Some(86400),
+                        keep_every: 86400,
                         max_snapshots: None,
                         for_duration: Some(2629746),
                     }

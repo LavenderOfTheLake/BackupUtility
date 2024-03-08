@@ -1,7 +1,6 @@
-use crate::btrfs;
 use crate::types::Vault;
 
-fn snap(vault: &Vault) -> Result<(), String> {
+pub fn snap(vault: &Vault) -> Result<(), String> {
     //Stage 1 - verify that all relevant paths are btrfs subvols
     if !btrfs::is_btrfs_subvol(vault.path.as_path()) {
         return Err(format!(

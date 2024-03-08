@@ -16,7 +16,7 @@ pub struct Volume {
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct RetentionTier {
-    pub keep_every: Option<u64>, //time in seconds
+    pub keep_every: u64, //time in seconds
     pub for_duration: Option<u64>,
     pub name: Option<String>,
     pub max_snapshots: Option<i32>,
